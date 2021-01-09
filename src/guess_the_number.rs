@@ -1,9 +1,10 @@
-pub mod dialogue {
-  extern crate rand;
+extern crate rand;
 
+pub mod dialogue {
   use rand::Rng;
   use std::cmp::Ordering;
   use std::io;
+
   pub fn main() {
     let secret_number = rand::thread_rng().gen_range(1, 101);
     loop {
