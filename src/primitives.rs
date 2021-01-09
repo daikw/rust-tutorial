@@ -3,4 +3,3 @@ pub mod functions {
     println!("called primitives function");
   }
 }
-
