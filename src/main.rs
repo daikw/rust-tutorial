@@ -11,7 +11,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // functions::puts();
   // dialogue::main();
   // variables::example();
-  println!("{}", draw_functions::f(100, 100));
 
   let path = "image.svg";
   draw_functions::draw(path)?;
