@@ -13,6 +13,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // variables::example();
 
   let path = "image.svg";
-  draw_functions::draw(path)?;
+  let function = draw_functions::f;
+  draw_functions::draw(path, function)?;
+
   Ok(())
 }

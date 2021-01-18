@@ -1,33 +1,39 @@
 type Function = fn(i64, i64) -> i64;
+type F = Function; // alias
 
 pub fn f(x: i64, y: i64) -> i64 {
   return x + y;
 }
 
+struct SVGRenderer {
+  f: F,
+}
+
 use std::fs::File;
-use std::io::{self, BufReader, Read, Write};
+use std::io::{BufWriter, Write};
 use std::path::Path;
 
-fn write<R: Read>(path_string: &str, buf: R) -> Result<(), Box<dyn std::error::Error>> {
-  let path = Path::new(path_string);
-  let mut file = File::create(path)?;
-  for result in BufReader::new(buf).bytes() {
-    let byte = result?;
-    file.write_all(&[byte])?;
+impl SVGRenderer {
+  pub fn new(function: F) -> SVGRenderer {
+    return SVGRenderer { f: function };
   }
-  file.flush()?;
 
+  fn write(&self, path_string: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let path = Path::new(path_string);
+    let file = File::create(path)?;
+    let mut writer = BufWriter::new(file);
+
+    // let z = self.f(100, 50);
+    let z = 0;
+    let text = format!("{}, {}, {}", "<svg>", z, "</svg>");
+
+    writer.write(text.as_bytes())?;
+    Ok(())
+  }
+}
+
+pub fn draw(path_string: &str, f: Function) -> Result<(), Box<dyn std::error::Error>> {
+  let renderer = SVGRenderer::new(f);
+  renderer.write(path_string)?;
   Ok(())
-}
-
-pub fn render(f: Function) -> impl Read {
-  let z = f(100, 50);
-  format!("{}, {}, {}", "<svg>", z, "</svg>");
-
-  return io::stdin();
-}
-
-pub fn draw(path_string: &str) -> Result<(), Box<dyn std::error::Error>> {
-  let renderer = render(f);
-  write(path_string, renderer)
 }
