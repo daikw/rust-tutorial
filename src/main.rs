@@ -14,7 +14,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   let path = "image.svg";
   let function = draw_functions::f;
-  draw_functions::draw(path, function)?;
+  let canvas = draw_functions::Canvas::default();
+
+  draw_functions::draw(path, function, canvas)?;
 
   Ok(())
 }
