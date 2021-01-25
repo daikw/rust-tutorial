@@ -13,7 +13,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // variables::example();
 
   let path = "image.svg";
-  let function = draw_functions::f;
+
+  // let function = draw_functions::f;
+  let function = draw_functions::sin_rr;
+  // let function = |x: f64, y: f64| -> f64 { return x * y };
+
   let canvas = draw_functions::Canvas::default();
 
   draw_functions::draw(path, function, canvas)?;
