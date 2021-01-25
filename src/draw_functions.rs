@@ -48,10 +48,31 @@ impl SVGRenderer {
     let file = File::create(path)?;
     let mut writer = BufWriter::new(file);
 
-    let z = (self.f)(100, 50);
-    let text = format!("{}, {}, {}", "<svg>", z, "</svg>");
+    let header = format!(
+      "<?xml version=\"1.0\"?>\n
+        <svg\
+         xmlns=\"http://www.w3.org/2000/svg\"\
+         style='stroke: grey; fill: white; stroke-width: 0.7' width='{}' height='{}'\
+        >\n",
+      100, 100
+    );
+    writer.write(header.as_bytes())?;
 
-    writer.write(text.as_bytes())?;
+    for x in self.canvas.xrange[0]..=self.canvas.xrange[1] {
+      for y in self.canvas.yrange[0]..=self.canvas.yrange[1] {
+        let z = (self.f)(x, y);
+        let polygon = format!(
+          "  <polygon points='{},{} {},{} {},{} {},{}'/>\n",
+          z, z, z, z, z, z, z, z
+        );
+
+        writer.write(polygon.as_bytes())?;
+      }
+    }
+
+    let footer = "</svg>";
+    writer.write(footer.as_bytes())?;
+
     Ok(())
   }
 }
