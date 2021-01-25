@@ -6,7 +6,7 @@ pub fn f(x: i64, y: i64) -> i64 {
 }
 
 struct SVGRenderer {
-  f: F,
+  f: Function,
 }
 
 use std::fs::File;
@@ -23,8 +23,7 @@ impl SVGRenderer {
     let file = File::create(path)?;
     let mut writer = BufWriter::new(file);
 
-    // let z = self.f(100, 50);
-    let z = 0;
+    let z = (self.f)(100, 50);
     let text = format!("{}, {}, {}", "<svg>", z, "</svg>");
 
     writer.write(text.as_bytes())?;
