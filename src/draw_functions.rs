@@ -1,15 +1,33 @@
 pub mod functions {
   extern crate libm;
 
+  extern crate rand;
+  use rand::{thread_rng, Rng};
+
   pub type Function = fn(f64, f64) -> f64;
   pub type F = Function; // alias
 
+  fn sampler(len: usize) -> usize {
+    let mut rng = thread_rng();
+    let rand = rng.gen::<f64>(); // range == (0, 1)
+
+    let index = (rand * len as f64).floor() as usize;
+    return index;
+  }
+
   pub fn sample() -> F {
-    return |x: f64, y: f64| -> f64 { return x * y };
+    let funcs = [sum, prod, sin_rr];
+    let index = sampler(funcs.len());
+
+    return funcs[index];
   }
 
   pub fn sum(x: f64, y: f64) -> f64 {
     return x + y;
+  }
+
+  pub fn prod(x: f64, y: f64) -> f64 {
+    return x * y;
   }
 
   pub fn sin_rr(x: f64, y: f64) -> f64 {
@@ -17,9 +35,39 @@ pub mod functions {
     return r.sin() / r;
   }
 
-  #[test]
-  fn test_sum() {
-    assert_eq!(sum(2.0, 2.0), 4.0);
+  #[cfg(test)]
+  mod test {
+    use super::*;
+
+    #[test]
+    fn test_sum() {
+      assert_eq!(sum(2.0, 2.0), 4.0);
+      assert_ne!(sum(1.0, 2.0), 10.0);
+    }
+
+    #[test]
+    fn test_prod() {
+      assert_eq!(prod(2.0, 2.0), 4.0);
+      assert_eq!(prod(0.0, 2.0), 0.0);
+      assert_eq!(prod(2.5, 200.0), 500.0);
+    }
+
+    #[test]
+    fn test_sin_rr() {
+      assert!(sin_rr(2.0, 2.0) - 4.0 <= 0.00_001);
+    }
+
+    #[test]
+    fn test_sampler() {
+      let length = 5;
+      let test_count = 20;
+
+      for _ in 1..test_count {
+        let index = sampler(length);
+        println!("{:?}", index); // print with `cargo test -- --nocapture`
+        assert!(index <= length - 1);
+      }
+    }
   }
 }
 
