@@ -12,27 +12,27 @@ pub mod functions {
     let rand = rng.gen::<f64>(); // range == (0, 1)
 
     let index = (rand * len as f64).floor() as usize;
-    return index;
+    index
   }
 
   pub fn sample() -> F {
     let funcs = [sum, prod, sin_rr];
     let index = sampler(funcs.len());
 
-    return funcs[index];
+    funcs[index]
   }
 
   pub fn sum(x: f64, y: f64) -> f64 {
-    return x + y;
+    x + y
   }
 
   pub fn prod(x: f64, y: f64) -> f64 {
-    return x * y;
+    x * y
   }
 
   pub fn sin_rr(x: f64, y: f64) -> f64 {
     let r = libm::hypot(x, y);
-    return r.sin() / r;
+    r.sin() / r
   }
 
   #[cfg(test)]
@@ -83,22 +83,24 @@ pub mod renderers {
 
   impl Canvas {
     pub fn default() -> Canvas {
-      return Canvas {
+      Canvas {
         width: 600,
         height: 320,
         xyrange: 30.0,
         cells: 100,
-      };
+      }
     }
+
     pub fn new(width: i64, height: i64, xyrange: f64, cells: i64) -> Canvas {
-      return Canvas {
+      Canvas {
         width: width,
         height: height,
         xyrange: xyrange,
         cells: cells,
-      };
+      }
     }
-    fn project(&self, f: functions::Function, i: i64, j: i64) -> [f64; 2] {
+
+    fn project(&self, f: functions::F, i: i64, j: i64) -> [f64; 2] {
       let x = self.xyrange * ((i as f64) / (self.cells as f64) - 0.5);
       let y = self.xyrange * ((j as f64) / (self.cells as f64) - 0.5);
       let z = f(x, y);
@@ -107,7 +109,8 @@ pub mod renderers {
       let zscale = (self.height as f64) * 0.4;
       let sx = (self.width as f64) / 2.0 + (x - y) * angle.cos() * xyscale;
       let sy = (self.height as f64) / 2.0 + (x + y) * angle.sin() * xyscale - z * zscale;
-      return [sx, sy];
+
+      [sx, sy]
     }
   }
 
@@ -116,17 +119,18 @@ pub mod renderers {
   use std::path::Path;
 
   struct SVGRenderer {
-    f: functions::Function,
+    f: functions::F,
     canvas: Canvas,
   }
 
   impl SVGRenderer {
-    pub fn new(function: functions::Function, canvas: Canvas) -> SVGRenderer {
-      return SVGRenderer {
+    pub fn new(function: functions::F, canvas: Canvas) -> SVGRenderer {
+      SVGRenderer {
         f: function,
         canvas: canvas,
-      };
+      }
     }
+
     fn write(&self, path_string: &str) -> Result<(), Box<dyn std::error::Error>> {
       let path = Path::new(path_string);
       let file = File::create(path)?;
@@ -137,6 +141,7 @@ pub mod renderers {
         self.canvas.width, self.canvas.height
       );
       writer.write(header.as_bytes())?;
+
       for i in 0..self.canvas.cells {
         for j in 0..self.canvas.cells {
           let [ax, ay] = self.canvas.project(self.f, i + 1, j);
@@ -152,17 +157,19 @@ pub mod renderers {
       }
       let footer = "</svg>";
       writer.write(footer.as_bytes())?;
+
       Ok(())
     }
   }
 
   pub fn draw(
     path_string: &str,
-    f: functions::Function,
+    f: functions::F,
     canvas: Canvas,
   ) -> Result<(), Box<dyn std::error::Error>> {
     let renderer = SVGRenderer::new(f, canvas);
     renderer.write(path_string)?;
+
     Ok(())
   }
 }
