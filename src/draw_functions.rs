@@ -11,8 +11,7 @@ pub mod functions {
     let mut rng = thread_rng();
     let rand = rng.gen::<f64>(); // range == (0, 1)
 
-    let index = (rand * len as f64).floor() as usize;
-    index
+    (rand * len as f64).floor() as usize
   }
 
   pub fn sample() -> F {
@@ -54,7 +53,7 @@ pub mod functions {
 
     #[test]
     fn test_sin_rr() {
-      assert!(sin_rr(2.0, 2.0) - 4.0 <= 0.00_001);
+      assert!(sin_rr(2.0, 2.0) - 4.0 <= 0.000_01);
     }
 
     #[test]
@@ -65,7 +64,7 @@ pub mod functions {
       for _ in 1..test_count {
         let index = sampler(length);
         println!("{:?}", index); // print with `cargo test -- --nocapture`
-        assert!(index <= length - 1);
+        assert!(index < length);
       }
     }
   }
@@ -93,10 +92,10 @@ pub mod renderers {
 
     pub fn new(width: i64, height: i64, xyrange: f64, cells: i64) -> Canvas {
       Canvas {
-        width: width,
-        height: height,
-        xyrange: xyrange,
-        cells: cells,
+        width,
+        height,
+        xyrange,
+        cells,
       }
     }
 
@@ -118,16 +117,16 @@ pub mod renderers {
   use std::io::{BufWriter, Write};
   use std::path::Path;
 
-  struct SVGRenderer {
+  struct SvgRenderer {
     f: functions::F,
     canvas: Canvas,
   }
 
-  impl SVGRenderer {
-    pub fn new(function: functions::F, canvas: Canvas) -> SVGRenderer {
-      SVGRenderer {
+  impl SvgRenderer {
+    pub fn new(function: functions::F, canvas: Canvas) -> SvgRenderer {
+      SvgRenderer {
         f: function,
-        canvas: canvas,
+        canvas,
       }
     }
 
@@ -140,7 +139,7 @@ pub mod renderers {
            style='stroke: grey; fill: white; stroke-width: 0.7' width='{}' height='{}'>\n",
         self.canvas.width, self.canvas.height
       );
-      writer.write(header.as_bytes())?;
+      writer.write_all(header.as_bytes())?;
 
       for i in 0..self.canvas.cells {
         for j in 0..self.canvas.cells {
@@ -152,11 +151,11 @@ pub mod renderers {
             "  <polygon points='{},{} {},{} {},{} {},{}'/>\n",
             ax, ay, bx, by, cx, cy, dx, dy
           );
-          writer.write(polygon.as_bytes())?;
+          writer.write_all(polygon.as_bytes())?;
         }
       }
       let footer = "</svg>";
-      writer.write(footer.as_bytes())?;
+      writer.write_all(footer.as_bytes())?;
 
       Ok(())
     }
@@ -167,7 +166,7 @@ pub mod renderers {
     f: functions::F,
     canvas: Canvas,
   ) -> Result<(), Box<dyn std::error::Error>> {
-    let renderer = SVGRenderer::new(f, canvas);
+    let renderer = SvgRenderer::new(f, canvas);
     renderer.write(path_string)?;
 
     Ok(())
