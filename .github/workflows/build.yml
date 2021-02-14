@@ -1,0 +1,19 @@
+on: push
+
+jobs:
+  pre-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: fmt
+        uses: icepuma/rust-action@master
+        with:
+          args: cargo fmt -- --check
+      - name: lint
+        uses: icepuma/rust-action@master
+        with:
+          args: cargo clippy -- -Dwarnings
+      - name: test
+        uses: icepuma/rust-action@master
+        with:
+          args: cargo test
