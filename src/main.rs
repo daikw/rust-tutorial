@@ -1,3 +1,4 @@
+mod calculator;
 mod draw_functions;
 
 pub use crate::draw_functions::functions as funcs;
