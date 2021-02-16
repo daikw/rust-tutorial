@@ -1,10 +1,7 @@
 mod components {
   #[allow(dead_code)]
-  fn lexer(_formula: String) -> Vec<String> {
-    let values: Vec<&str> = vec!["1", "+", "1"];
-    // return ["1".to_string(), "+".to_string(), "1".to_string()];
-    // return vec!["1", "+", "1"];
-    values.into_iter().map(|x| x.to_string()).collect()
+  fn lexer(formula: String) -> Vec<String> {
+    formula.chars().map(|x| x.to_string()).collect()
   }
 
   #[cfg(test)]
