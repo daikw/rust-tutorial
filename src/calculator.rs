@@ -1,9 +1,10 @@
-mod calculator {
+mod components {
+  #[allow(dead_code)]
   fn lexer(_formula: String) -> Vec<String> {
     let values: Vec<&str> = vec!["1", "+", "1"];
     // return ["1".to_string(), "+".to_string(), "1".to_string()];
     // return vec!["1", "+", "1"];
-    return values.into_iter().map(|x| x.to_string()).collect();
+    values.into_iter().map(|x| x.to_string()).collect()
   }
 
   #[cfg(test)]
