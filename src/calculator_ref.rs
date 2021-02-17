@@ -96,7 +96,7 @@ pub fn lex(input: &str) -> Result<Vec<Token>, LexError> {
 
   while pos < input.len() {
     match input[pos] {
-      b'0'..=b'9' => lex_a_token!(lex_number(input, pos)),
+      b'0'..=b'9' => lex_a_token!(Ok(lex_number(input, pos))),
       b'+' => lex_a_token!(lex_plus(input, pos)),
       b'-' => lex_a_token!(lex_minus(input, pos)),
       b'*' => lex_a_token!(lex_asterisk(input, pos)),
@@ -148,7 +148,7 @@ fn lex_rparen(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
   consume_byte(input, start, b')').map(|(_, end)| (Token::rparen(Loc(start, end)), end))
 }
 
-fn lex_number(input: &[u8], mut pos: usize) -> Result<(Token, usize), LexError> {
+fn lex_number(input: &[u8], mut pos: usize) -> (Token, usize) {
   use std::str::from_utf8;
 
   let start = pos;
@@ -157,7 +157,7 @@ fn lex_number(input: &[u8], mut pos: usize) -> Result<(Token, usize), LexError> 
   }
   let n = from_utf8(&input[start..pos]).unwrap().parse().unwrap();
 
-  Ok((Token::number(n, Loc(start, pos)), pos))
+  (Token::number(n, Loc(start, pos)), pos)
 }
 
 fn skip_spaces(input: &[u8], mut pos: usize) -> ((), usize) {
