@@ -107,7 +107,7 @@ pub fn lex(input: &str) -> Result<Vec<Token>, LexError> {
         let ((), p) = skip_spaces(input, pos);
         pos = p;
       }
-      _ => lex_a_token!(lex_plus(input, pos)),
+      b => return Err(LexError::invalid_char(b as char, Loc(pos, pos + 1))),
     }
   }
 
@@ -190,5 +190,10 @@ fn test_lexer() {
       Token::minus(Loc(12, 13)),
       Token::number(10, Loc(13, 15)),
     ])
-  )
+  );
+
+  assert_eq!(
+    lex("1 + 2 + a"),
+    Err(LexError::invalid_char('a', Loc(8, 9))),
+  );
 }
