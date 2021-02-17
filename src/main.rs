@@ -35,9 +35,11 @@ fn main() {
   let mut lines = stdin.lines();
 
   loop {
+    pub use crate::calculator_ref::lexer;
+
     prompt("> ").unwrap();
     if let Some(Ok(line)) = lines.next() {
-      let token = calculator_ref::lex(&line);
+      let token = lexer::lex(&line);
       println!("{:?}", token);
     } else {
       break;
