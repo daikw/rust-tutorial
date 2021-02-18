@@ -53,6 +53,19 @@ impl From<ParseError> for Error {
   }
 }
 
+use std::error::Error as StdError;
+impl StdError for LexError {}
+impl StdError for ParseError {}
+impl StdError for Error {
+  fn source(&self) -> Option<&(dyn StdError + 'static)> {
+    use self::Error::*;
+    match self {
+      Lexer(lex) => Some(lex),
+      Parser(parse) => Some(parse),
+    }
+  }
+}
+
 use ast::parse;
 use lexer::lex;
 use std::str::FromStr;
