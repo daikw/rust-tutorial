@@ -36,19 +36,15 @@ fn main() {
 
   loop {
     pub use crate::calculator_ref::ast;
-    use calculator_ref::StdError;
+    use calculator_ref::show_trace;
 
     prompt("> ").unwrap();
     if let Some(Ok(line)) = lines.next() {
       let ast = match line.parse::<ast::Ast>() {
         Ok(ast) => ast,
         Err(e) => {
-          eprintln!("{}", e);
-          let mut source = e.source();
-          while let Some(e) = source {
-            eprintln!("caused by {}", e);
-            source = e.source()
-          }
+          e.show_diagnostic(&line);
+          show_trace(e);
           continue;
         }
       };
