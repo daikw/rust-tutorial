@@ -36,7 +36,7 @@ fn main() {
 
   loop {
     pub use crate::calculator_ref::ast;
-    use std::error::Error;
+    use calculator_ref::StdError;
 
     prompt("> ").unwrap();
     if let Some(Ok(line)) = lines.next() {

@@ -53,7 +53,7 @@ impl From<ParseError> for Error {
   }
 }
 
-use std::error::Error as StdError;
+pub use std::error::Error as StdError;
 impl StdError for LexError {}
 impl StdError for ParseError {}
 impl StdError for Error {
