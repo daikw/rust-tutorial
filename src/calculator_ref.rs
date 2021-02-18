@@ -7,6 +7,13 @@ impl Loc {
   }
 }
 
+use std::fmt;
+impl fmt::Display for Loc {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}-{}", self.0, self.1)
+  }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Annot<T> {
   value: T,
@@ -26,6 +33,12 @@ use lexer::LexError;
 pub enum Error {
   Lexer(LexError),
   Parser(ParseError),
+}
+
+impl fmt::Display for Error {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "parser error")
+  }
 }
 
 impl From<LexError> for Error {
@@ -68,6 +81,23 @@ pub mod lexer {
     RParen,      // )
   }
 
+  use std::fmt;
+  impl fmt::Display for TokenKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      use self::TokenKind::*;
+
+      match self {
+        Number(n) => n.fmt(f),
+        Plus => write!(f, "+"),
+        Minus => write!(f, "-"),
+        Asterisk => write!(f, "*"),
+        Slash => write!(f, "/"),
+        LParen => write!(f, "("),
+        RParen => write!(f, ")"),
+      }
+    }
+  }
+
   pub type Token = Annot<TokenKind>;
   impl Token {
     fn number(n: u64, loc: Loc) -> Self {
@@ -105,6 +135,17 @@ pub mod lexer {
     }
     fn eof(loc: Loc) -> Self {
       Self::new(LexErrorKind::Eof, loc)
+    }
+  }
+
+  impl fmt::Display for LexError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      use self::LexErrorKind::*;
+      let loc = &self.loc;
+      match self.value {
+        InvalidChar(c) => write!(f, "{}: invalid char '{}'", loc, c),
+        Eof => write!(f, "End of file"),
+      }
     }
   }
 
@@ -292,6 +333,29 @@ pub mod ast {
     UnclosedOpenParen(Token),
     RedundantExpression(Token),
     Eof,
+  }
+
+  use std::fmt;
+  impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      use self::ParseError::*;
+      match self {
+        UnexpectedToken(token) => write!(f, "{}: '{}' is not expected", token.loc, token.value),
+        NotExpression(token) => write!(
+          f,
+          "{}: '{}' is not a start of expression",
+          token.loc, token.value
+        ),
+        NotOperator(token) => write!(f, "{}: '{}' is not an operator", token.loc, token.value),
+        UnclosedOpenParen(token) => write!(f, "{}: '{}' is not closed", token.loc, token.value),
+        RedundantExpression(token) => write!(
+          f,
+          "{}: expression after '{}' is redundant",
+          token.loc, token.value
+        ),
+        Eof => write!(f, "End of file"),
+      }
+    }
   }
 
   pub fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
