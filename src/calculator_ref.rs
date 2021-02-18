@@ -310,19 +310,15 @@ pub mod ast {
     Tokens: Iterator<Item = Token>,
   {
     let mut l = subexpr_parser(tokens)?;
-    loop {
-      match tokens.peek() {
-        Some(_) => {
-          let op = match op_parser(tokens) {
-            Ok(op) => op,
-            Err(_) => break, // no more infix op
-          };
-          let r = subexpr_parser(tokens)?;
-          let loc = l.loc.merge(&r.loc);
-          l = Ast::binop(op, l, r, loc)
-        }
-        _ => break,
-      }
+
+    while tokens.peek().is_some() {
+      let op = match op_parser(tokens) {
+        Ok(op) => op,
+        Err(_) => break, // no more infix op
+      };
+      let r = subexpr_parser(tokens)?;
+      let loc = l.loc.merge(&r.loc);
+      l = Ast::binop(op, l, r, loc)
     }
 
     Ok(l)
@@ -396,7 +392,7 @@ pub mod ast {
           match tokens.next() {
             Some(Token {
               value: TokenKind::RParen,
-              loc,
+              loc: _,
             }) => Ok(e),
             Some(t) => Err(ParseError::RedundantExpression(t)),
             _ => Err(ParseError::UnclosedOpenParen(token)),
