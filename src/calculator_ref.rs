@@ -19,6 +19,41 @@ impl<T> Annot<T> {
   }
 }
 
+use ast::Ast;
+use ast::ParseError;
+use lexer::LexError;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Error {
+  Lexer(LexError),
+  Parser(ParseError),
+}
+
+impl From<LexError> for Error {
+  fn from(e: LexError) -> Self {
+    Error::Lexer(e)
+  }
+}
+
+impl From<ParseError> for Error {
+  fn from(e: ParseError) -> Self {
+    Error::Parser(e)
+  }
+}
+
+use ast::parse;
+use lexer::lex;
+use std::str::FromStr;
+impl FromStr for Ast {
+  type Err = Error;
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let tokens = lex(s)?;
+    let ast = parse(tokens)?;
+
+    Ok(ast)
+  }
+}
+
 pub mod lexer {
   use super::Annot;
   use super::Loc;
@@ -186,12 +221,12 @@ pub mod ast {
   use super::Loc;
 
   #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-  enum AstKind {
+  pub enum AstKind {
     Num(u64),
     UniOp { op: UniOp, e: Box<Ast> },
     BinOp { op: BinOp, r: Box<Ast>, l: Box<Ast> },
   }
-  type Ast = Annot<AstKind>;
+  pub type Ast = Annot<AstKind>;
   impl Ast {
     fn num(n: u64, loc: Loc) -> Self {
       Self::new(AstKind::Num(n), loc)
@@ -212,11 +247,11 @@ pub mod ast {
   }
 
   #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-  enum UniOpKind {
+  pub enum UniOpKind {
     Plus,
     Minus,
   }
-  type UniOp = Annot<UniOpKind>;
+  pub type UniOp = Annot<UniOpKind>;
   impl UniOp {
     fn plus(loc: Loc) -> Self {
       Self::new(UniOpKind::Plus, loc)
@@ -227,13 +262,13 @@ pub mod ast {
   }
 
   #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-  enum BinOpKind {
+  pub enum BinOpKind {
     Add,
     Sub,
     Mult,
     Div,
   }
-  type BinOp = Annot<BinOpKind>;
+  pub type BinOp = Annot<BinOpKind>;
   impl BinOp {
     fn add(loc: Loc) -> Self {
       Self::new(BinOpKind::Add, loc)
@@ -251,7 +286,7 @@ pub mod ast {
 
   use super::lexer::Token;
   #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-  enum ParseError {
+  pub enum ParseError {
     UnexpectedToken(Token),
     NotExpression(Token),
     NotOperator(Token),
@@ -260,7 +295,7 @@ pub mod ast {
     Eof,
   }
 
-  fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
+  pub fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
     let mut tokens = tokens.into_iter().peekable();
     let ret = parse_expr(&mut tokens)?;
     match tokens.next() {

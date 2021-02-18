@@ -35,12 +35,18 @@ fn main() {
   let mut lines = stdin.lines();
 
   loop {
-    pub use crate::calculator_ref::lexer;
+    pub use crate::calculator_ref::ast;
 
     prompt("> ").unwrap();
     if let Some(Ok(line)) = lines.next() {
-      let token = lexer::lex(&line);
-      println!("{:?}", token);
+      let ast = match line.parse::<ast::Ast>() {
+        Ok(ast) => ast,
+        Err(_) => {
+          unimplemented!()
+        }
+      };
+      // let token = lexer::lex(&line);
+      println!("{:?}", ast);
     } else {
       break;
     }
