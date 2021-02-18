@@ -36,13 +36,20 @@ fn main() {
 
   loop {
     pub use crate::calculator_ref::ast;
+    use std::error::Error;
 
     prompt("> ").unwrap();
     if let Some(Ok(line)) = lines.next() {
       let ast = match line.parse::<ast::Ast>() {
         Ok(ast) => ast,
-        Err(_) => {
-          unimplemented!()
+        Err(e) => {
+          eprintln!("{}", e);
+          let mut source = e.source();
+          while let Some(e) = source {
+            eprintln!("caused by {}", e);
+            source = e.source()
+          }
+          continue;
         }
       };
       // let token = lexer::lex(&line);
