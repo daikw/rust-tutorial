@@ -677,3 +677,20 @@ pub mod interpreter {
     }
   }
 }
+
+#[cfg(test)]
+mod test {
+  use super::ast::parse;
+  use super::interpreter::Interpreter;
+  use super::lexer::lex;
+
+  #[test]
+  fn test_interpreter() {
+    let tokens = lex("1 + 2 * 3 - 10").unwrap();
+    let ast = parse(tokens).unwrap();
+    let mut interpreter = Interpreter::new();
+
+    let value = interpreter.eval(&ast).unwrap();
+    assert_eq!(value, 3);
+  }
+}
