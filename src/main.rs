@@ -29,6 +29,8 @@ fn prompt(s: &str) -> io::Result<()> {
 fn main() {
   use std::io::{stdin, BufRead, BufReader};
 
+  let mut interpreter = calculator_ref::interpreter::Interpreter::new();
+
   let stdin = stdin();
   let stdin = stdin.lock();
   let stdin = BufReader::new(stdin);
@@ -48,8 +50,16 @@ fn main() {
           continue;
         }
       };
-      // let token = lexer::lex(&line);
-      println!("{:?}", ast);
+      let n = match interpreter.eval(&ast) {
+        Ok(n) => n,
+        Err(e) => {
+          e.show_diagnostic(&line);
+          show_trace(e);
+          continue;
+        }
+      };
+
+      println!("{:?}", n);
     } else {
       break;
     }

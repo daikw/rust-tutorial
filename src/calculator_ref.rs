@@ -1,3 +1,5 @@
+// ref: https://github.com/ghmagazine/rustbook/tree/master/ch09/parser
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Loc(usize, usize);
 impl Loc {
@@ -66,6 +68,16 @@ impl StdError for Error {
   }
 }
 
+use interpreter::InterpreterErrorKind;
+impl StdError for InterpreterError {
+  fn description(&self) -> &str {
+    use self::InterpreterErrorKind::*;
+    match self.value {
+      DivisionByZero => "the right hand expression of the division evaluates to zero",
+    }
+  }
+}
+
 fn print_annot(input: &str, loc: Loc) {
   eprintln!("{}", input);
   eprintln!("{}{}", " ".repeat(loc.0), "^".repeat(loc.1 - loc.0))
@@ -93,6 +105,16 @@ impl Error {
     };
     eprintln!("{}", e);
     print_annot(input, loc);
+  }
+}
+
+use interpreter::InterpreterError;
+impl InterpreterError {
+  pub fn show_diagnostic(&self, input: &str) {
+    // エラー情報を簡単に表示し
+    eprintln!("{}", self);
+    // エラー位置を指示する
+    print_annot(input, self.loc.clone());
   }
 }
 
@@ -581,5 +603,77 @@ pub mod ast {
         Loc(0, 15)
       ))
     )
+  }
+}
+
+pub mod interpreter {
+  use super::ast::*;
+  use super::Annot;
+
+  pub struct Interpreter;
+  impl Interpreter {
+    pub fn new() -> Self {
+      Interpreter
+    }
+
+    pub fn eval(&mut self, expr: &Ast) -> Result<i64, InterpreterError> {
+      match expr.value {
+        AstKind::Num(n) => Ok(n as i64),
+        AstKind::UniOp { ref op, ref e } => {
+          let e = self.eval(e)?;
+          Ok(self.eval_uniop(op, e))
+        }
+        AstKind::BinOp {
+          ref op,
+          ref l,
+          ref r,
+        } => {
+          let l = self.eval(l)?;
+          let r = self.eval(r)?;
+          self
+            .eval_binop(op, l, r)
+            .map_err(|e| InterpreterError::new(e, expr.loc.clone()))
+        }
+      }
+    }
+
+    pub fn eval_uniop(&mut self, op: &UniOp, n: i64) -> i64 {
+      match op.value {
+        UniOpKind::Plus => n,
+        UniOpKind::Minus => -n,
+      }
+    }
+
+    pub fn eval_binop(&mut self, op: &BinOp, l: i64, r: i64) -> Result<i64, InterpreterErrorKind> {
+      match op.value {
+        BinOpKind::Add => Ok(l + r),
+        BinOpKind::Sub => Ok(l - r),
+        BinOpKind::Mult => Ok(l * r),
+        BinOpKind::Div => {
+          if r == 0 {
+            Err(InterpreterErrorKind::DivisionByZero)
+          } else {
+            Ok(l / r)
+          }
+        }
+      }
+    }
+  }
+
+  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+  pub enum InterpreterErrorKind {
+    DivisionByZero,
+  }
+  pub type InterpreterError = Annot<InterpreterErrorKind>;
+
+  use std::fmt;
+  impl fmt::Display for InterpreterError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      use self::InterpreterErrorKind::*;
+
+      match self.value {
+        DivisionByZero => write!(f, "zero division error"),
+      }
+    }
   }
 }
