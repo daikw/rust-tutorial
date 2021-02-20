@@ -329,7 +329,6 @@ pub mod lexer {
   }
 }
 
-#[allow(dead_code)]
 pub mod ast {
   use super::Annot;
   use super::Loc;
@@ -342,6 +341,7 @@ pub mod ast {
   }
   pub type Ast = Annot<AstKind>;
   impl Ast {
+    #[allow(dead_code)]
     fn num(n: u64, loc: Loc) -> Self {
       Self::new(AstKind::Num(n), loc)
     }
@@ -399,6 +399,7 @@ pub mod ast {
   }
 
   use super::lexer::Token;
+  #[allow(dead_code)]
   #[derive(Debug, Clone, PartialEq, Eq, Hash)]
   pub enum ParseError {
     UnexpectedToken(Token),
